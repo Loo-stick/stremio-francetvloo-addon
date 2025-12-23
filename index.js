@@ -71,6 +71,18 @@ const manifest = {
             id: 'francetv-slash',
             name: 'France tv Slash',
             extra: [{ name: 'skip', isRequired: false }]
+        },
+        {
+            type: 'movie',
+            id: 'francetv-sport',
+            name: '⚽ Sport',
+            extra: [{ name: 'skip', isRequired: false }]
+        },
+        {
+            type: 'series',
+            id: 'francetv-series-et-fictions',
+            name: '📺 Séries & Fictions',
+            extra: [{ name: 'skip', isRequired: false }]
         }
     ],
     idPrefixes: [ID_PREFIX]
@@ -97,10 +109,10 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
         // Pagination
         const paginated = videos.slice(skip, skip + limit);
 
-        // Formate pour Stremio
+        // Formate pour Stremio (utilise le type demandé)
         const metas = paginated.map(video => ({
             id: `${ID_PREFIX}${video.id}`,
-            type: 'movie',
+            type: type,
             name: video.title,
             poster: video.image,
             posterShape: 'landscape',
@@ -140,7 +152,7 @@ builder.defineMetaHandler(async ({ type, id }) => {
         return {
             meta: {
                 id: id,
-                type: 'movie',
+                type: type,
                 name: video.title,
                 poster: video.image,
                 posterShape: 'landscape',
@@ -244,13 +256,15 @@ app.listen(PORT, () => {
 [Addon] Manifest: ${ADDON_URL}/manifest.json
 [Addon] ========================================
 
-[Addon] Chaînes disponibles:
+[Addon] Catalogues disponibles:
 [Addon]   - France 2
 [Addon]   - France 3
 [Addon]   - France 4
 [Addon]   - France 5
 [Addon]   - franceinfo
 [Addon]   - France tv Slash
+[Addon]   - Sport
+[Addon]   - Séries & Fictions
 [Addon] ========================================
 
 [Addon] Note: Certains contenus protégés par DRM
