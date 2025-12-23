@@ -83,6 +83,24 @@ const manifest = {
             id: 'francetv-series-et-fictions',
             name: '📺 Séries & Fictions',
             extra: [{ name: 'skip', isRequired: false }]
+        },
+        {
+            type: 'movie',
+            id: 'francetv-rugby',
+            name: '🏉 Rugby',
+            extra: [{ name: 'skip', isRequired: false }]
+        },
+        {
+            type: 'movie',
+            id: 'francetv-papotin',
+            name: '🎤 Le Papotin',
+            extra: [{ name: 'skip', isRequired: false }]
+        },
+        {
+            type: 'movie',
+            id: 'francetv-emissions',
+            name: '📻 Émissions TV',
+            extra: [{ name: 'skip', isRequired: false }, { name: 'search', isRequired: false }]
         }
     ],
     idPrefixes: [ID_PREFIX]
@@ -104,7 +122,29 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     const channelId = id.replace('francetv-', '');
 
     try {
-        const videos = await francetv.getChannelContent(channelId);
+        let videos = [];
+
+        // Gestion des catalogues spéciaux
+        if (channelId === 'rugby') {
+            videos = await francetv.getRugbyContent();
+        } else if (channelId === 'papotin') {
+            videos = await francetv.search('papotin');
+        } else if (channelId === 'emissions') {
+            // Si recherche spécifiée, sinon émissions populaires
+            const searchQuery = extra?.search || '';
+            if (searchQuery) {
+                videos = await francetv.search(searchQuery);
+            } else {
+                // Émissions populaires par défaut
+                const popular = ['papotin', 'quotidien', 'grande librairie', 'on est en direct', 'c dans l\'air'];
+                for (const q of popular) {
+                    const results = await francetv.search(q);
+                    videos.push(...results.slice(0, 10));
+                }
+            }
+        } else {
+            videos = await francetv.getChannelContent(channelId);
+        }
 
         // Pagination
         const paginated = videos.slice(skip, skip + limit);
@@ -257,14 +297,11 @@ app.listen(PORT, () => {
 [Addon] ========================================
 
 [Addon] Catalogues disponibles:
-[Addon]   - France 2
-[Addon]   - France 3
-[Addon]   - France 4
-[Addon]   - France 5
-[Addon]   - franceinfo
-[Addon]   - France tv Slash
-[Addon]   - Sport
-[Addon]   - Séries & Fictions
+[Addon]   - France 2, France 3, France 4, France 5
+[Addon]   - franceinfo, France tv Slash
+[Addon]   - Sport, Séries & Fictions
+[Addon]   - 🏉 Rugby, 🎤 Le Papotin
+[Addon]   - 📻 Émissions TV (avec recherche)
 [Addon] ========================================
 
 [Addon] Note: Certains contenus protégés par DRM
